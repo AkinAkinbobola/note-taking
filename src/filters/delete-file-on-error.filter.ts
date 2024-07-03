@@ -20,6 +20,11 @@ export class DeleteFileOnErrorFilter implements ExceptionFilter {
     };
 
     const filePath = getFiles(request.file);
+    if (!filePath) {
+      return {
+        message: 'Error uploading form',
+      };
+    }
 
     fs.unlink(filePath, (err) => {
       if (err) {
