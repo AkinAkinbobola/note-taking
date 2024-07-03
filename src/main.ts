@@ -1,10 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ExceptionsLoggerFiler } from './filters/exceptions-logger.filer';
+import { ValidationPipe } from '@nestjs/common';
+import { DeleteFileOnErrorFilter } from './filters/delete-file-on-error.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  // app.useGlobalFilters(new ExceptionsLoggerFiler());
+  app.useGlobalPipes(
+    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+  );
+  app.useGlobalFilters(new DeleteFileOnErrorFilter())
   await app.listen(3000);
 }
 

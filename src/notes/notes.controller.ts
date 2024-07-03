@@ -6,16 +6,17 @@ import {
   ParseFilePipeBuilder,
   Post,
   UploadedFile,
+  UseFilters,
   UseInterceptors,
 } from '@nestjs/common';
 import { NotesService } from './notes.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { uuid } from 'uuidv4';
+import { v4 as uuidv4 } from 'uuid';
+import { DeleteFileOnErrorFilter } from '../filters/delete-file-on-error.filter';
 
-const id = uuid();
-console.log(id);
+const id = uuidv4();
 
 const storage = diskStorage({
   destination: './uploads',
@@ -34,9 +35,12 @@ export class NotesController {
   async uploadFile(
     @UploadedFile(
       new ParseFilePipeBuilder()
-        .addFileTypeValidator({ fileType: '.txt' })
-        .addMaxSizeValidator({ maxSize: 1000 })
-        .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
+        .addFileTypeValidator({
+          fileType: 'text',
+        })
+        .build({
+          errorHttpStatusCode: HttpStatus.BAD_REQUEST,
+        }),
     )
     file: Express.Multer.File,
   ) {
