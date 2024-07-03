@@ -27,6 +27,8 @@ export class DeleteFileOnErrorFilter implements ExceptionFilter {
         return err;
       }
     });
-    response.status(status).json(exception.getResponse());
+    response.status(status).json({
+      message: 'Only text / txt files allowed',
+    });
   }
 }
