@@ -1,15 +1,18 @@
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
   BadRequestException,
+  Catch,
+  ExceptionFilter,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import * as fs from 'fs';
+import * as util from 'util';
+
+const unlinkFile = util.promisify(fs.unlink);
 
 @Catch(BadRequestException)
 export class DeleteFileOnErrorFilter implements ExceptionFilter {
-  catch(exception: BadRequestException, host: ArgumentsHost) {
+  async catch(exception: BadRequestException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
@@ -20,18 +23,17 @@ export class DeleteFileOnErrorFilter implements ExceptionFilter {
     };
 
     const filePath = getFiles(request.file);
-    if (!filePath) {
-      return {
-        message: 'Error uploading form',
-      };
+
+    if (filePath) {
+      try {
+        await unlinkFile(filePath);
+      } catch (e) {
+        response.status(status).json({
+          message: 'Error processing file',
+        });
+      }
     }
 
-    fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error(err);
-        return err;
-      }
-    });
     response.status(status).json({
       message: 'Only text / txt files allowed',
     });
