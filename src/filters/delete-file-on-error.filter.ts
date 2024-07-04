@@ -1,8 +1,8 @@
 import {
   ArgumentsHost,
-  BadRequestException,
   Catch,
   ExceptionFilter,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import * as fs from 'fs';
@@ -10,9 +10,9 @@ import * as util from 'util';
 
 const unlinkFile = util.promisify(fs.unlink);
 
-@Catch(BadRequestException)
+@Catch(UnprocessableEntityException)
 export class DeleteFileOnErrorFilter implements ExceptionFilter {
-  async catch(exception: BadRequestException, host: ArgumentsHost) {
+  async catch(exception: UnprocessableEntityException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
